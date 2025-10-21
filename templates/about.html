@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Us | PayLite</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="./static/css/about.css">
+  <link href="https://fonts.cdnfonts.com/css/valorax" rel="stylesheet">
+  <style>
+    #chatbot-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 9999;
+      cursor: pointer;
+      background: #6610f2;
+      color: #fff;
+      padding: 16px 18px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+      font-size: 24px;
+      transition: background 0.2s;
+    }
+    #chatbot-btn:hover { background: #400b94; }
+    #chatbot-popup {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      width: 340px;
+      max-width: 96vw;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(80,40,120,0.14);
+      z-index: 9999;
+      overflow: hidden;
+      flex-direction: column;
+      transition: opacity 0.25s;
+      opacity: 0;
+    }
+    #chatbot-popup.active {
+      display: flex;
+      opacity: 1;
+    }
+    .loader {
+      width: 60px;
+      aspect-ratio: 4;
+      --_g: no-repeat radial-gradient(circle closest-side,#000 90%,#0000);
+      background: 
+        var(--_g) 0%   50%,
+        var(--_g) 50%  50%,
+        var(--_g) 100% 50%;
+      background-size: calc(100%/3) 100%;
+      animation: l7 1s infinite linear;
+      margin: 18px auto;
+      display: none;
+    }
+    @keyframes l7 {
+        33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
+        50%{background-size:calc(100%/3) 100%,calc(100%/3) 0%  ,calc(100%/3) 100%}
+        66%{background-size:calc(100%/3) 100%,calc(100%/3) 100%,calc(100%/3) 0%  }
+    }
+    @media (max-width: 480px) {
+      #chatbot-popup { width: 95vw; right: 2vw; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark container">
+    <a class="navbar-brand fw-bold" href="/" style="font-family: 'valorax', sans-serif;">PayLite</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a href="{{url_for('login')}}" class="btn btn-light btn-register">Log In</a></li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<!-- Floating Gemini Chatbot Button and Popup -->
+<div id="chatbot-btn" onclick="toggleChatbot()">💬</div>
+<div id="chatbot-popup">
+    <div style="background:#6610f2;color:#fff;padding:14px;font-weight:600;">
+        Help Assisstant
+        <span style="float:right;cursor:pointer;" onclick="toggleChatbot()">&times;</span>
+    </div>
+    <div id="chatbot-messages" style="padding:16px;height:280px;overflow-y:auto;font-size:15px;line-height:1.4"></div>
+    <div id="chatbot-loader" class="loader" ></div>
+    <div style="display:flex;align-items:center;border-top:1px solid #eee;">
+        <input id="chatbot-input" style="flex:1;padding:12px;border:none;outline:none;" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter'){sendGeminiMessage()}" />
+        <button id="chatbot-send" onclick="sendGeminiMessage()" style="background:#6610f2;color:#fff;border:none;padding:12px 16px;cursor:pointer;">➤</button>
+    </div>
+</div>
+<script>
+function toggleChatbot() {
+    const popup = document.getElementById('chatbot-popup');
+    if (popup.classList.contains("active")) {
+        popup.classList.remove("active");
+    } else {
+        popup.classList.add("active");
+    }
+}
+
+async function sendGeminiMessage() {
+    const input = document.getElementById('chatbot-input');
+    const messages = document.getElementById('chatbot-messages');
+    const button = document.getElementById('chatbot-send');
+    const loader = document.getElementById('chatbot-loader');
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+    messages.innerHTML += `<div style="margin:10px 0;text-align:right;"><b>You:</b> ${userMsg}</div>`;
+    input.value = "";
+    input.disabled = true;
+    button.disabled = true;
+    loader.style.display = "block";
+
+    const GEMINI_API_KEY = 'AIzaSyB3mR5_Lt-UK9icBr85QLk_NGRetYtAbgA'; // Demo only
+    const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    const payload = {
+        system_instruction: {
+            parts: [
+                { text: "Always reply with plain raw text, concise & short explaination, without any formatting / emoji, MAX WORD LIMIT: 80" }
+            ]
+        },
+        contents: [
+            {
+                parts: [
+                    { text: userMsg }
+                ]
+            }
+        ]
+    };
+
+    try {
+        const response = await fetch(GEMINI_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        let aiReply = "Sorry, Gemini could not respond.";
+        if (
+            data?.candidates &&
+            data.candidates[0]?.content?.parts &&
+            data.candidates[0].content.parts.length > 0
+        ) {
+            const textPart = data.candidates[0].content.parts.find(
+                part => typeof part.text === "string"
+            );
+            aiReply = textPart ? textPart.text : "[Gemini returned a non-text response.]";
+        }
+        messages.innerHTML += `<div style="margin:10px 0;color:#510da8;"><b>Paylite-Bot:</b> ${aiReply}</div>`;
+    } catch (err) {
+        messages.innerHTML += `<div style="margin:10px 0;color:#dc3545;"><b>PayLite-Bot:</b> Error connecting to Gemini API.</div>`;
+    }
+    loader.style.display = "none";
+    messages.scrollTop = messages.scrollHeight;
+    input.disabled = false;
+    button.disabled = false;
+}
+</script>
+
+<section class="about-section">
+  <div class="container">
+    <h2 class="text-center mb-4 animate__animated animate__fadeIn">About PayLite</h2>
+    <p class="lead text-center animate__animated animate__fadeInUp">PayLite is a modern payment gateway designed to simplify and secure online transactions for businesses and users worldwide.</p>
+       <!-- Image Left, Text Right -->
+    <div class="row about-content align-items-center mb-5 animate__animated animate__fadeInLeft">
+      <div class="col-md-6">
+        <img src="https://img.freepik.com/fotos-premium/camino-al-exito-futuro-mas-brillante_558606-370.jpg?semt=ais_incoming&w=740&q=80" alt="Payment Technology" class="img-fluid">
+      </div>
+      <div class="col-md-6">
+        <h3>Our Journey</h3>
+        <p>Founded in 2025, PayLite emerged from a vision to revolutionize the payment industry. Our team identified the complexities businesses face with traditional payment systems and set out to create a solution that is both user-friendly and secure.</p>
+        <p>Over the years, we've grown as a small idea to a trusted name in digital payments, serving thousands of businesses across the globe. Our commitment to innovation drives us to continuously enhance our platform to meet the evolving needs of our clients.</p>
+      </div>
+    </div>
+
+    <!-- Image Right, Text Left 
+    <div class="row about-content align-items-center mb-5 animate__animated animate__fadeInRight">
+      <div class="col-md-6 order-md-2">
+        <img src="https://www.nokia.com/sites/default/files/2022-01/cybersecurity4_0.jpg?height=600&width=1920&resize=1" alt="Secure Transactions" class="img-fluid">
+      </div>
+      <div class="col-md-6 order-md-1">
+        <h3>Our Commitment to Security</h3>
+        <p>At PayLite, security is at the core of everything we do. We employ state-of-the-art encryption and comply with the highest industry standards to ensure every transaction is safe and secure.</p>
+        <p>Our dedicated security team works around the clock to monitor and protect our platform, giving our users peace of mind. Whether you're a small business or a large enterprise, PayLite ensures your transactions are handled with the utmost care.</p>
+      </div>
+    </div-->
+
+  <!--
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm team-card animate__animated animate__fadeInLeft">
+          <h5>Our Mission</h5>
+          <p>To provide a seamless and secure payment experience for all, enabling businesses to thrive in a digital economy.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm team-card animate__animated animate__fadeInUp">
+          <h5>Our Vision</h5>
+          <p>Empowering businesses with scalable payment solutions that adapt to their unique needs and drive growth.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm team-card animate__animated animate__fadeInRight">
+          <h5>Our Team</h5>
+          <p>A dedicated group of innovators building the future of payments with passion and expertise.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+-->
+  </section>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-links mb-3 animate__animated animate__fadeIn">
+      <a href="https://in.linkedin.com/in/amogh-patil-533168296" target="_blank" class="btn btn-outline-light btn-sm"><i class="bi bi-linkedin"></i> LinkedIn</a>
+      <a href="https://github.com/amoghsp132" target="_blank" class="btn btn-outline-light btn-sm"><i class="bi bi-github"></i> GitHub</a>
+      <a href="https://amoghsp132.github.io/My-Portfolio/" target="_blank" class="btn btn-outline-light btn-sm"><i class="bi bi-person-circle"></i> Portfolio</a>
+    </div>
+    <p>Developed by <strong>Amogh Patil & Team</strong> &copy; <span id="year"></span></p>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+Great question 👍 — this is exactly what real PSPs (Stripe, Razorpay, PayPal, etc.) do: they provide an **embeddable widget** or **script tag** that merchants drop into their site.
+
+You can build this with **Flask + HTML + CSS + JS only** (no extra frameworks). Let me break it down:
+
+---
+
+## 🔹 Concept
+
+* Merchant includes a `<script src="https://yourdomain.com/widget.js"></script>` in their site.
+* That script injects an `<iframe>` or `<div>` into their page where your **payment widget UI** lives.
+* The iframe calls your Flask server (`/widget`) to render the UI (payment form, button, etc.).
+* Communication between merchant site and your widget is done via **postMessage** (safe browser API).
+
+---
+
+## 🔹 Steps
+
+### 1. **Expose a Widget Route in Flask**
+
+```python
+# app.py
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route("/widget")
+def widget():
+    # This is the embeddable widget (iframe content)
+    return render_template("widget.html")
+```
+
+---
+
+### 2. **Widget Template (`templates/widget.html`)**
+
+This is what merchants’ customers will see inside an iframe.
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0; font-family: Arial;
+    }
+    .pay-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      width: 250px;
+      background: #f9f9f9;
+    }
+    button {
+      background: #007bff; color: white; border: none;
+      padding: 10px; width: 100%; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="pay-box">
+    <h4>Pay with MyGateway</h4>
+    <input type="text" id="amount" placeholder="Enter amount">
+    <button onclick="pay()">Pay</button>
+  </div>
+
+  <script>
+    function pay() {
+      const amt = document.getElementById("amount").value;
+      // Send message back to parent page
+      window.parent.postMessage({event: "payment", amount: amt}, "*");
+    }
+  </script>
+</body>
+</html>
+```
+
+---
+
+### 3. **Deliver a Script for Merchants (`/widget.js`)**
+
+```python
+@app.route("/widget.js")
+def widget_js():
+    js = """
+    (function(){
+      function loadWidget(){
+        var iframe = document.createElement("iframe");
+        iframe.src = "https://yourdomain.com/widget";
+        iframe.style.border = "none";
+        iframe.style.width = "300px";
+        iframe.style.height = "200px";
+        document.currentScript.parentNode.insertBefore(iframe, document.currentScript);
+      }
+      loadWidget();
+    })();
+    """
+    return js, 200, {"Content-Type": "application/javascript"}
+```
+
+---
+
+### 4. **Merchant Website Usage**
+
+The merchant just needs to add:
+
+```html
+<script src="https://yourdomain.com/widget.js"></script>
+
+<script>
+window.addEventListener("message", function(e){
+  if(e.data.event === "payment"){
+    console.log("Customer wants to pay:", e.data.amount);
+    // Call your backend API with AJAX/Fetch to actually process payment
+  }
+});
+</script>
+```
+
+---
+
+## 🔹 How It Works
+
+1. Merchant includes your `<script>`
+2. Script injects an `<iframe>` pointing to your `/widget` route
+3. Widget shows UI (input + button)
+4. On click → widget posts message to merchant page (`postMessage`)
+5. Merchant handles message (calls your API, shows confirmation, etc.)
+
+---
+
+## 🔹 Security Notes
+
+* Always validate the origin of `postMessage` (don’t use `"*"` in production — whitelist allowed domains).
+* Keep sensitive payment logic on your server — the widget should only collect data and pass tokens.
+* Use HTTPS only.
+
+---
+
+👉 This is the **simplest working version** of an embeddable payment widget in Flask using only HTML/CSS/JS.
+
+Do you want me to **extend this into a full payment flow** (like your `/pay` route integration) so that the widget actually calls your Flask backend and shows success/failure inside the iframe itself?

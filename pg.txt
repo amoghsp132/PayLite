@@ -1,0 +1,20 @@
+/home - index.html(stripe copy)
+/register = register.html
+		|-signup
+		|-siguin
+/dashboard - Dashboard.html
+		|-merchantD.hmtl
+		|-UserD.html
+/widget - widget.html
+		|-widget.js
+/about - about.html
+/report - report.html #embeddable in Dashboards
+/bank.db
+
+
+
+#mechanism
+/upi sender
+/upi receiver
+/gemini api(help chatbot)
+/pandas/sweetvis

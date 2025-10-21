@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="wrapper">
+    <h1>Create Account</h1>
+
+
+    <form method="POST">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes" style="list-style-type: none;">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+      {{ form.hidden_tag() }}
+
+      <!-- First + Last Name -->
+      <div class="name_fields">
+        <div class="input_box">
+          {{ form.fname(placeholder="First Name") }}
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="input_box">
+          {{ form.lname(placeholder="Last Name") }}
+          <i class="fa-solid fa-user"></i>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="input_box">
+        {{ form.email(placeholder="Email") }}
+        <i class="fa-solid fa-envelope"></i>
+      </div>
+
+      <!-- Password with toggle -->
+      <div class="input_box">
+        {{ form.password(placeholder="Password", id="passwordField") }}
+        <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+      </div>
+
+      <!-- Submit -->
+      <div class="input_box">
+        {{ form.submit(value="Sign Up") }}
+      </div>
+
+      <!-- Checkbox -->
+      <div style="display: flex; align-items: center;">
+        {{ form.is_merchant(id="isMerchant") }}
+        <label for="isMerchant">Sign up as Merchant</label>
+      </div>
+
+      <div class="login_link">
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Toggle password visibility
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordField = document.getElementById("passwordField");
+
+    togglePassword.addEventListener("click", () => {
+      const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
+      passwordField.setAttribute("type", type);
+      togglePassword.classList.toggle("fa-eye");
+      togglePassword.classList.toggle("fa-eye-slash");
+    });
+
+  </script>
+</body>
+</html>

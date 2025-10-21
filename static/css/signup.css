@@ -1,0 +1,136 @@
+/* ============ General Reset ============ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(120deg, #0d6efd, #6610f2,#aa10f2);
+  background-size: 400%;
+  animation: waterflow 5s ease-in-out infinite;
+}
+@keyframes waterflow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+/* ============ Wrapper (Form Box) ============ */
+.wrapper {
+  width: 400px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 5px 25px rgba(0, 0, 0, 0.2);
+}
+
+.wrapper h1 {
+  font-size: 28px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* ============ Input Boxes ============ */
+.input_box {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  margin: 15px 0;
+}
+
+.input_box input {
+  width: 100%;
+  height: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 15px;
+  transition: 0.3s ease;
+}
+
+.input_box input:focus {
+  border-color: #2575fc;
+  box-shadow: 0px 0px 5px rgba(37, 117, 252, 0.3);
+}
+
+/* Icons inside input */
+.input_box i {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #888;
+}
+
+/* ============ First + Last Name Flex Row ============ */
+.name_fields {
+  display: flex;
+  gap: 10px; /* space between inputs */
+}
+
+.name_fields .input_box {
+  flex: 1; /* makes both first/last name equal width */
+  margin: 0; /* remove extra margin so row looks clean */
+}
+
+/* ============ Submit Button ============ */
+.input_box input[type="submit"] {
+  background: linear-gradient(120deg, #0d6efd, #6610f2,#aa10f2);
+  background-size: 400%;
+  animation: waterflow 5s ease-in-out infinite;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.input_box input[type="submit"]:hover {
+  background: linear-gradient(120deg, #0d6efd, #6610f2,#aa10f2);
+  background-size: 400%;
+  animation: waterflow 5s ease-in-out infinite;
+}
+
+/* ============ Login Link ============ */
+.login_link {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+}
+
+.login_link a {
+  color: #2575fc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login_link a:hover {
+  text-decoration: underline;
+}
+.flashes {
+  margin-bottom: 15px;
+}
+.flash {
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.success{
+  color: green;
+}
+.danger{
+  color: red;
+}

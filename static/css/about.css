@@ -1,0 +1,107 @@
+   body { font-family: 'Inter', sans-serif; }
+    header {
+      background: linear-gradient(120deg, #094093, #400b94,#750ca5);
+      background-size: 400%;
+      animation: waterflow 5s ease-in-out infinite;
+    }
+    header a, header .navbar-brand { color: #fff !important; }
+    header .btn-register { background: #fff; color: #000000 !important; transition: transform 0.3s ease, opacity 0.3s ease; }
+    header .btn-register:hover { transform: scale(1.05); color: #000000 !important; opacity: 1; }
+    .hero {
+      padding: 120px 0;
+      text-align: center;
+      background: linear-gradient(120deg, #0d6efd, #6610f2,#aa10f2);
+      background-size: 400%;
+      animation: waterflow 5s ease-in-out infinite;
+      color: #fff;
+    }
+    @keyframes waterflow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .hero h1, .hero p, .hero .btn { animation: fadeInUp 1s ease-in-out; }
+    .feature-card, .logo-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .feature-card:hover, .logo-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .footer-links .btn {
+      margin: 0 5px;
+      
+      transition: background-color 0.3s ease;
+    }
+    .about-section {
+      padding: 30px 0;
+      background: #f8f9fa;
+    }
+    .about-section h2 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .about-section .lead {
+      font-size: 1.5rem;
+      color: #333;
+      margin-bottom: 2rem;
+    }
+    .about-content {
+      margin-bottom: 4rem;
+    }
+    .about-content img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .about-content h3 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .about-content p {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+    .team-card {
+      transition: transform 0.3s ease;
+      border: none;
+      border-radius: 10px;
+      padding: 2rem;
+      background: #fff;
+    }
+    .team-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .team-card h5 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .team-card p {
+      font-size: 1rem;
+      color: #555;
+    }
+    footer {
+      background: #0d1117;
+      color: #aaa;
+      padding: 20px 0;
+      text-align: center;
+    }
+    footer a { text-decoration: none; }
+    .navbar-nav .nav-link {
+      position: relative;
+      margin-right: 50px; /* Spacing between nav links */
+      transition: color 0.3s ease;
+    }
+    @media (max-width: 768px) {
+      .about-section h2 {
+        font-size: 2rem;
+      }
+      .about-section .lead {
+        font-size: 1.2rem;
+      }
+      .about-content h3 {
+        font-size: 1.5rem;
+      }
+      .about-content img {
+        margin-bottom: 1.5rem;
+      }
+    }

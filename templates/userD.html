@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paylite User</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.cdnfonts.com/css/valorax" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    header a, header .navbar-brand { color: #fff !important; }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f9f9f9;
+    }
+    .navbar {
+      background: #343a40;
+      color: white;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+      height: 56px;
+    }
+    .navbar .search-bar {
+      max-width: 300px;
+    }
+    .sidebar {
+      width: 220px;
+      height: 100vh;
+      position: fixed;
+      top: 56px; /* navbar height */
+      left: 0;
+      background: #212529;
+      padding-top: 20px;
+    }
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: #ddd;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background: #343a40;
+      color: #fff;
+    }
+    .sidebar .logout-btn {
+      background: #dc3545;
+      color: white;
+      text-align: center;
+      margin: 20px 15px;
+      padding: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .sidebar .logout-btn:hover {
+      background: #c82333;
+      color: white;
+    }
+    .content {
+      margin-top: 56px; /* navbar height */
+      margin-left: 230px;
+      padding: 20px;
+    }
+    .card {
+      border-radius: 12px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    }
+    .transactions-table {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    }
+  </style>
+
+  <style>
+    #chatbot-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 9999;
+      cursor: pointer;
+      background: #6610f2;
+      color: #fff;
+      padding: 16px 18px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+      font-size: 24px;
+      transition: background 0.2s;
+    }
+    #chatbot-btn:hover { background: #400b94; }
+    #chatbot-popup {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      width: 340px;
+      max-width: 96vw;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(80,40,120,0.14);
+      z-index: 9999;
+      overflow: hidden;
+      flex-direction: column;
+      transition: opacity 0.25s;
+      opacity: 0;
+    }
+    #chatbot-popup.active {
+      display: flex;
+      opacity: 1;
+    }
+    .loader {
+      width: 60px;
+      aspect-ratio: 4;
+      --_g: no-repeat radial-gradient(circle closest-side,#000 90%,#0000);
+      background: 
+        var(--_g) 0%   50%,
+        var(--_g) 50%  50%,
+        var(--_g) 100% 50%;
+      background-size: calc(100%/3) 100%;
+      animation: l7 1s infinite linear;
+      margin: 18px auto;
+      display: none;
+    }
+    @keyframes l7 {
+        33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
+        50%{background-size:calc(100%/3) 100%,calc(100%/3) 0%  ,calc(100%/3) 100%}
+        66%{background-size:calc(100%/3) 100%,calc(100%/3) 100%,calc(100%/3) 0%  }
+    }
+    @media (max-width: 480px) {
+      #chatbot-popup { width: 95vw; right: 2vw; }
+    }
+  </style>
+
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <a class="navbar-brand fw-bold" href="{{'/'}}" style="font-family: 'valorax', sans-serif;">PayLite</a>
+      <div class="d-flex align-items-center">
+        <form class="search-bar me-3">
+          <input class="form-control" type="search" placeholder="Search transactions..." aria-label="Search">
+        </form>
+<div class="btn-group">
+  <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="fa fa-user-circle"></i> {{ user_name }}
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="left: auto; right: 0;">
+    <li><a class="dropdown-item" href="#">Account</a></li>
+    <li><a class="dropdown-item" href="#">Support</a></li>
+    <li><hr class="dropdown-divider"></li>
+    
+    <!-- Red background for the Logout button -->
+    <li><a class="dropdown-item text-white" href="{{ url_for('logout') }}" style="background-color: red;">
+      <i class="fa fa-sign-out-alt" style="color:white;"></i> Logout</a></li>
+  </ul>
+</div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <a href="{{ url_for('dashboard') }}"><i class="fa fa-chart-line"></i> Dashboard</a>
+  </div>
+
+<!-- Floating Gemini Chatbot Button and Popup -->
+<div id="chatbot-btn" onclick="toggleChatbot()">💬</div>
+<div id="chatbot-popup">
+    <div style="background:#6610f2;color:#fff;padding:14px;font-weight:600;">
+        Help Assisstant
+        <span style="float:right;cursor:pointer;" onclick="toggleChatbot()">&times;</span>
+    </div>
+    <div id="chatbot-messages" style="padding:16px;height:280px;overflow-y:auto;font-size:15px;line-height:1.4"></div>
+    <div id="chatbot-loader" class="loader" ></div>
+    <div style="display:flex;align-items:center;border-top:1px solid #eee;">
+        <input id="chatbot-input" style="flex:1;padding:12px;border:none;outline:none;" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter'){sendGeminiMessage()}" />
+        <button id="chatbot-send" onclick="sendGeminiMessage()" style="background:#6610f2;color:#fff;border:none;padding:12px 16px;cursor:pointer;">➤</button>
+    </div>
+</div>
+<script>
+function toggleChatbot() {
+    const popup = document.getElementById('chatbot-popup');
+    if (popup.classList.contains("active")) {
+        popup.classList.remove("active");
+    } else {
+        popup.classList.add("active");
+    }
+}
+
+async function sendGeminiMessage() {
+    const input = document.getElementById('chatbot-input');
+    const messages = document.getElementById('chatbot-messages');
+    const button = document.getElementById('chatbot-send');
+    const loader = document.getElementById('chatbot-loader');
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+    messages.innerHTML += `<div style="margin:10px 0;text-align:right;"><b>You:</b> ${userMsg}</div>`;
+    input.value = "";
+    input.disabled = true;
+    button.disabled = true;
+    loader.style.display = "block";
+
+    const GEMINI_API_KEY = 'AIzaSyB3mR5_Lt-UK9icBr85QLk_NGRetYtAbgA'; // Demo only
+    const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    const payload = {
+        system_instruction: {
+            parts: [
+                { text: "Always reply with plain raw text, concise & short explaination, without any formatting / emoji, MAX WORD LIMIT: 80" }
+            ]
+        },
+        contents: [
+            {
+                parts: [
+                    { text: userMsg }
+                ]
+            }
+        ]
+    };
+
+    try {
+        const response = await fetch(GEMINI_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        let aiReply = "Sorry, Gemini could not respond.";
+        if (
+            data?.candidates &&
+            data.candidates[0]?.content?.parts &&
+            data.candidates[0].content.parts.length > 0
+        ) {
+            const textPart = data.candidates[0].content.parts.find(
+                part => typeof part.text === "string"
+            );
+            aiReply = textPart ? textPart.text : "[Gemini returned a non-text response.]";
+        }
+        messages.innerHTML += `<div style="margin:10px 0;color:#510da8;"><b>Paylite-Bot:</b> ${aiReply}</div>`;
+    } catch (err) {
+        messages.innerHTML += `<div style="margin:10px 0;color:#dc3545;"><b>PayLite-Bot:</b> Error connecting to Gemini API.</div>`;
+    }
+    loader.style.display = "none";
+    messages.scrollTop = messages.scrollHeight;
+    input.disabled = false;
+    button.disabled = false;
+}
+</script>
+
+  <!-- Main Content -->
+  <div class="content">
+    <div class="row mb-4">
+      <!-- Bar Graph -->
+      <div class="col-md-7">
+        <div class="card p-3">
+          <h5 class="mb-3">Weekly Spending</h5>
+          <canvas id="incomeChart"></canvas>
+        </div>
+      </div>
+      <!-- Percentage -->
+      <div class="col-md-5">
+        <div class="card p-3 text-center">
+          <h5>Performance</h5>
+          <p class="display-6 text-success">{{ percentage }}%</p>
+          <p>Your spending is {{ percentage }}% compared to your an average consumer</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions List -->
+    <div class="transactions-table">
+      <h5>Recent Transactions</h5>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Transaction ID</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for txn in transactions %}
+          <tr>
+            <td>{{ txn.date }}</td>
+            <td>{{ txn.time }}</td>
+            <td>{{ txn.id }}</td>
+            <td>₹{{ txn.amount }}</td>
+            <td>{{ txn.status }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">No transactions yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart.js Script -->
+  <script>
+    const ctx = document.getElementById('incomeChart').getContext('2d');
+    const incomeChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{ weeks | safe }},  // pass list from Flask
+        datasets: [{
+          label: 'Income',
+          data: {{ income | safe }}, // pass data list from Flask
+          backgroundColor: '#ffa600ff'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    const searchInput = document.querySelector('.search-bar input');
+  const tableRows = document.querySelectorAll('.transactions-table tbody tr');
+
+  searchInput.addEventListener('input', function () {
+    const searchTerm = this.value.toLowerCase();
+
+    tableRows.forEach(row => {
+      const rowText = row.cells[2].textContent.toLowerCase();
+      if (rowText.includes(searchTerm)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

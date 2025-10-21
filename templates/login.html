@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- Website - www.codingnepalweb.com -->
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login to PayLite</title>
+    <link rel="stylesheet" href="./static/css/login.css" />
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+  </head>
+  <body style="position: relative; overflow: hidden;">
+    <div class="main_div">
+      <div class="title">Login</div>
+      
+      <form method="POST" action="{{ url_for('login') }}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes" style="list-style-type: none; ">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
+  {{ form.hidden_tag() }}
+  <div class="input_box">
+    {{ form.email(placeholder="Email") }}
+  </div>
+  <div class="input_box">
+    {{ form.password(placeholder="Password") }}
+  </div>
+  <div class="option_div">
+    <div class="check_box">{{ form.remember() }} {{ form.remember.label }}</div>
+  </div>
+  <div class="input_box button">
+    {{ form.submit() }}
+    
+  </div>
+</form>
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payment Gateway | PayLite</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Animate.css -->
+  <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link href="https://fonts.cdnfonts.com/css/valorax" rel="stylesheet">
+
+    <style>
+    #chatbot-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 9999;
+      cursor: pointer;
+      background: #6610f2;
+      color: #fff;
+      padding: 16px 18px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+      font-size: 24px;
+      transition: background 0.2s;
+    }
+    #chatbot-btn:hover { background: #400b94; }
+    #chatbot-popup {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      width: 340px;
+      max-width: 96vw;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(80,40,120,0.14);
+      z-index: 9999;
+      overflow: hidden;
+      flex-direction: column;
+      transition: opacity 0.25s;
+      opacity: 0;
+    }
+    #chatbot-popup.active {
+      display: flex;
+      opacity: 1;
+    }
+    .loader {
+      width: 60px;
+      aspect-ratio: 4;
+      --_g: no-repeat radial-gradient(circle closest-side,#000 90%,#0000);
+      background: 
+        var(--_g) 0%   50%,
+        var(--_g) 50%  50%,
+        var(--_g) 100% 50%;
+      background-size: calc(100%/3) 100%;
+      animation: l7 1s infinite linear;
+      margin: 18px auto;
+      display: none;
+    }
+    @keyframes l7 {
+        33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
+        50%{background-size:calc(100%/3) 100%,calc(100%/3) 0%  ,calc(100%/3) 100%}
+        66%{background-size:calc(100%/3) 100%,calc(100%/3) 100%,calc(100%/3) 0%  }
+    }
+    @media (max-width: 480px) {
+      #chatbot-popup { width: 95vw; right: 2vw; }
+    }
+  </style>
+
+</head>
+<body>
+<!-- Header -->
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark container">
+    <a class="navbar-brand fw-bold" style="font-family: 'valorax', sans-serif;" href="">PayLite</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav nav-links-container">
+        <li class="nav-item"><a class="nav-link" href="{{url_for('about')}}">About</a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a href="{{url_for('login')}}" class="btn btn-light btn-register">Log In</a></li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <h1 class="display-4 fw-bold animate__animated animate__fadeInUp">A Smarter Way to Handle Payments</h1>
+    <p class="lead animate__animated animate__fadeInUp animate__delay-1s">Fast, secure, and reliable payment infrastructure (in development).</p>
+    <a  href="{{url_for('register')}}" class="btn btn-light btn-lg mt-3 animate__animated animate__fadeInUp animate__delay-2s">Get Started</a>
+  </div>
+</section>
+<!-- Floating Gemini Chatbot Button and Popup -->
+<div id="chatbot-btn" onclick="toggleChatbot()">💬</div>
+<div id="chatbot-popup">
+    <div style="background:#6610f2;color:#fff;padding:14px;font-weight:600;">
+        Help Assisstant
+        <span style="float:right;cursor:pointer;" onclick="toggleChatbot()">&times;</span>
+    </div>
+    <div id="chatbot-messages" style="padding:16px;height:280px;overflow-y:auto;font-size:15px;line-height:1.4"></div>
+    <div id="chatbot-loader" class="loader" ></div>
+    <div style="display:flex;align-items:center;border-top:1px solid #eee;">
+        <input id="chatbot-input" style="flex:1;padding:12px;border:none;outline:none;" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter'){sendGeminiMessage()}" />
+        <button id="chatbot-send" onclick="sendGeminiMessage()" style="background:#6610f2;color:#fff;border:none;padding:12px 16px;cursor:pointer;">➤</button>
+    </div>
+</div>
+<script>
+function toggleChatbot() {
+    const popup = document.getElementById('chatbot-popup');
+    if (popup.classList.contains("active")) {
+        popup.classList.remove("active");
+    } else {
+        popup.classList.add("active");
+    }
+}
+
+async function sendGeminiMessage() {
+    const input = document.getElementById('chatbot-input');
+    const messages = document.getElementById('chatbot-messages');
+    const button = document.getElementById('chatbot-send');
+    const loader = document.getElementById('chatbot-loader');
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+    messages.innerHTML += `<div style="margin:10px 0;text-align:right;"><b>You:</b> ${userMsg}</div>`;
+    input.value = "";
+    input.disabled = true;
+    button.disabled = true;
+    loader.style.display = "block";
+
+    const GEMINI_API_KEY = 'AIzaSyB3mR5_Lt-UK9icBr85QLk_NGRetYtAbgA'; // Demo only
+    const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    const payload = {
+        system_instruction: {
+            parts: [
+                { text: "Always reply with plain raw text, concise & short explaination, without any formatting / emoji, MAX WORD LIMIT: 80" }
+            ]
+        },
+        contents: [
+            {
+                parts: [
+                    { text: userMsg }
+                ]
+            }
+        ]
+    };
+
+    try {
+        const response = await fetch(GEMINI_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        let aiReply = "Sorry, Gemini could not respond.";
+        if (
+            data?.candidates &&
+            data.candidates[0]?.content?.parts &&
+            data.candidates[0].content.parts.length > 0
+        ) {
+            const textPart = data.candidates[0].content.parts.find(
+                part => typeof part.text === "string"
+            );
+            aiReply = textPart ? textPart.text : "[Gemini returned a non-text response.]";
+        }
+        messages.innerHTML += `<div style="margin:10px 0;color:#510da8;"><b>Paylite-Bot:</b> ${aiReply}</div>`;
+    } catch (err) {
+        messages.innerHTML += `<div style="margin:10px 0;color:#dc3545;"><b>PayLite-Bot:</b> Error connecting to Gemini API.</div>`;
+    }
+    loader.style.display = "none";
+    messages.scrollTop = messages.scrollHeight;
+    input.disabled = false;
+    button.disabled = false;
+}
+</script>
+
+<!-- Features -->
+<section class="py-5">
+  <div class="container text-center">
+    <h2 class="mb-4 animate__animated animate__fadeIn">Why Choose Us?</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="p-4 border rounded shadow-sm feature-card animate__animated animate__fadeInLeft logo-card">
+          <h5>Security</h5>
+          <img src ="https://logowik.com/content/uploads/images/secure-payment2785.jpg"  alt ="e2e_image">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 border rounded shadow-sm feature-card animate__animated animate__fadeInUp logo-card">
+          <h5>Ease of Use</h5>
+          <img src="https://img.freepik.com/free-vector/people-with-technology-devices_23-2148447961.jpg" alt="ease_of_use_image">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 border rounded shadow-sm feature-card animate__animated animate__fadeInRight logo-card">
+          <h5>Analytics</h5>
+          <img src="https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Google-Analytics-4-Blog-Post-Header-2096x1182.width-1300_O3uqryV.jpg" alt="analytics_image">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Logos Section -->
+<section class="logo-section">
+  <div class="container text-center">
+    <h2 class="mb-4 animate__animated animate__fadeIn">Our Customers</h2>
+    <div class="row g-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInLeft">
+          <img src="https://graphicsprings.com/wp-content/uploads/2023/07/image-58-1024x512.png" alt="Brand 1">
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInUp">
+          <img src="https://images.seeklogo.com/logo-png/26/2/google-2015-new-logo-png_seeklogo-268031.png" alt="Brand 2">
+        </div>
+      </div>
+      
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInUp">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Meta-Logo.png" alt="Brand 3">
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInRight">
+          <img src="https://www.nvidia.com/content/nvidiaGDC/us/en_US/about-nvidia/legal-info/logo-brand-usage/_jcr_content/root/responsivegrid/nv_container_392921705/nv_container/nv_image.coreimg.100.1070.png/1703060329053/nvidia-logo-vert.png" alt="Brand 4">
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="container text-center"><br>
+    <div class="row g-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInLeft">
+          <img src="https://blogs.microsoft.com/wp-content/uploads/prod/2012/08/8867.Microsoft_5F00_Logo_2D00_for_2D00_screen-1024x376.jpg" alt="Brand 5">
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInUp">
+          <img src="https://1000logos.net/wp-content/uploads/2020/05/Amd-logo.jpg" alt="Brand 6">
+        </div>
+      </div>
+      
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInUp">
+          <img src="https://logos-world.net/wp-content/uploads/2020/07/Asus-Logo.png" alt="Brand 7">
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="logo-card animate__animated animate__fadeInRight">
+          
+          <img src="https://www.supplychain247.com/images/wide/MIT_Review_top_50_companies_wide_image.jpg" alt="Brand 8">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-links mb-3 animate__animated animate__fadeIn">
+      <a href="https://in.linkedin.com/in/amogh-patil-533168296" target="_blank" class="btn btn-outline-light btn-sm">
+        <i class="bi bi-linkedin"></i> LinkedIn
+      </a>
+      <a href="https://github.com/amoghsp132" target="_blank" class="btn btn-outline-light btn-sm">
+        <i class="bi bi-github"></i> GitHub
+      </a>
+      <a href="https://amoghsp132.github.io/My-Portfolio/" target="_blank" class="btn btn-outline-light btn-sm">
+        <i class="bi bi-person-circle"></i> Portfolio
+      </a>
+    </div>
+    <p>Developed by <strong>Amogh Patil & Team</strong> &copy; <span id="year"></span></p>
+  </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Auto update year
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
