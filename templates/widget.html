@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paylite Widget</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../static/css/widget.css">
+</head>
+<body>
+  <div class="container">
+    <div class="wrapper wrapper-content animated fadeInRight">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="ibox">
+            <div class="ibox-title">Payment method</div>
+            <div class="ibox-content">
+              <div class="panel-group payments-method" id="accordion">
+
+                <!-- UPI PANEL -->
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <div class="pull-right"><i class="fa fa-qrcode"></i></div>
+                    <h5 class="panel-title">
+                      <a data-toggle="collapse" data-parent="#accordion" href="#collapseUpi">UPI Pay</a>
+                    </h5>
+                  </div>
+                  <div id="collapseUpi" class="panel-collapse collapse">
+                    <div class="panel-body">
+                      <form>
+                        <div class="form-group">
+                          <label for="upi">UPI ID</label>
+                          <input type="text" class="form-control" id="upi" placeholder="Enter UPI ID" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Pay via UPI</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CARD PANEL -->
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <div class="pull-right">
+                      <i class="fa fa-cc-visa text-primary"></i>
+                      <i class="fa fa-cc-mastercard text-warning"></i>
+                      <i class="fa fa-cc-amex text-info"></i>
+                    </div>
+                    <h5 class="panel-title">
+                      <a data-toggle="collapse" data-parent="#accordion" href="#collapseCard">Card (DC/CC)</a>
+                    </h5>
+                  </div>
+                  <div id="collapseCard" class="panel-collapse collapse">
+                    <div class="panel-body">
+                      <form>
+                        <div class="form-group">
+                          <label for="cardnum">Card Number</label>
+                          <input type="text" class="form-control" id="cardnum" placeholder="Valid Card Number" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="expiry">Expiry Date</label>
+                          <input type="text" class="form-control" id="expiry" placeholder="MM / YY" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="cvv">CVV</label>
+                          <input type="text" class="form-control" id="cvv" placeholder="CVV" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="holder">Cardholder Name</label>
+                          <input type="text" class="form-control" id="holder" placeholder="Name as on card" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Pay with Card</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- NET BANKING PANEL -->
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <div class="pull-right"><i class="fa fa-university text-success"></i></div>
+                    <h5 class="panel-title">
+                      <a data-toggle="collapse" data-parent="#accordion" href="#collapseNetbanking">Net Banking</a>
+                    </h5>
+                  </div>
+                  <div id="collapseNetbanking" class="panel-collapse collapse">
+                    <div class="panel-body">
+                      <form>
+                        <div class="form-group">
+                          <label for="accno">Account Number</label>
+                          <input type="text" class="form-control" id="accno" placeholder="Account Number" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="ifsc">IFSC Code</label>
+                          <input type="text" class="form-control" id="ifsc" placeholder="IFSC Code" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="bankholder">Account Holder Name</label>
+                          <input type="text" class="form-control" id="bankholder" placeholder="Account Holder Name" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Pay via Net Banking</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <!-- END PANELS -->
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Bootstrap and JQuery JS -->
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

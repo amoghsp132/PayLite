@@ -1,0 +1,129 @@
+:root {
+  --primary-color: #1ab394;
+  --success-color: #1c84c6;
+  --warning-color: #f8ac59;
+  --danger-color: #ed5565;
+  --border-color: #e7eaec;
+  --text-color: #333;
+  --background-color: #fff;
+  --icon-color: #d1dade;
+  --spacing-unit: 1rem;
+  --border-radius: 8px;
+  --font-size-base: 1rem;
+  --font-size-heading: 1.15rem;
+  --font-size-large: 1.05rem;
+}
+
+/* Center the widget in viewport */
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #6a1b1b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--font-size-base);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+}
+
+/* Limit wrapper/card size */
+.wrapper {
+  background: var(--background-color);
+  box-shadow: 0 3px 32px rgba(0,0,0,0.09);
+  border-radius: var(--border-radius);
+  max-width: 380px;
+  width: 100%;
+  margin: 1.2rem auto;     /* margin top/bottom for widget breathing room */
+  padding: var(--spacing-unit) var(--spacing-unit) 1.5rem;
+}
+
+.ibox {
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 8px rgba(51,51,51,0.06);
+  padding: 0;
+  background: var(--background-color);
+  margin-bottom: 0;
+}
+
+.ibox-title {
+  padding: 0.75rem 1rem 0.4rem 1rem;
+  font-size: var(--font-size-heading);
+  border-top: 3px solid var(--border-color);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.ibox-content {
+  padding: var(--spacing-unit) 0.2rem;
+}
+
+.payments-method .panel {
+  border-radius: var(--border-radius);
+  background: var(--background-color);
+  border: none;
+  margin-bottom: 0.25rem;
+}
+
+/* Tiny heading and neat icon */
+.payments-method .panel-heading {
+  padding: 0.5rem 1rem;
+}
+.payments-method .panel-heading h5 {
+  font-size: 1rem;
+  margin: 0;
+}
+.payments-method .panel-heading i {
+  font-size: 1.25rem;
+}
+
+.form-group label {
+  font-size: 0.98rem;
+}
+
+.form-control,
+.single-line {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.42rem 0.85rem;
+  font-size: var(--font-size-large);
+  width: 100%;
+}
+
+.btn {
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    max-width: 98vw;
+    padding: 0.7rem 0.3rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .ibox-title {
+    font-size: 1.01rem;
+    padding: 0.5rem 0.8rem 0.23rem 0.8rem;
+  }
+  .payments-method .panel-heading {
+    padding: 0.4rem 0.5rem;
+  }
+  .form-control {
+    font-size: 1rem;
+    padding: 0.38rem 0.7rem;
+  }
+  .btn {
+    width: 100%;
+    margin-top: 0.6rem;
+    font-size: 1.01rem;
+    padding: 0.6rem 0;
+  }
+}
+
+/* Fine-tune panel collapse for mobile: keep one open, speed up transitions */
+.panel-collapse.collapse {
+  transition: height 0.15s ease;
+}

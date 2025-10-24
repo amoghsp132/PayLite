@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="./static/assets/images/PayLite_Logo.png" style="" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paylite Merchant</title>
   <!-- Bootstrap -->
@@ -303,9 +304,9 @@ async function sendGeminiMessage() {
           <tr>
             <td>{{ txn.date }}</td>
             <td>{{ txn.time }}</td>
-            <td>{{ txn.id }}</td>
-            <td>${{ txn.amount }}</td>
-            <td>{{ txn.status }}</td>
+            <td>{{ txn.txn_id }}</td>
+            <td>₹{{ txn.amount }}</td>
+            <td style="color:{{"green" if txn.status == "1" else "red" if txn.status == "2" else "orange"}}">{{ "Success" if txn.status == "1" else "Failed" if txn.status == "2" else "Pending" }}</td>
           </tr>
           {% else %}
           <tr>
@@ -316,43 +317,32 @@ async function sendGeminiMessage() {
       </table>
     </div>
   </div>
-
-  <!-- Chart.js Script -->
+    <!-- Chart.js & Search Script -->
   <script>
     const ctx = document.getElementById('incomeChart').getContext('2d');
     const incomeChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: {{ weeks | safe }},  // pass list from Flask
+        labels: {{ weeks | safe }},
         datasets: [{
           label: 'Income',
-          data: {{ income | safe }}, // pass data list from Flask
-          backgroundColor: '#00f75bff'
+          data: {{ income | safe }},
+          backgroundColor: '#00ff6aff'
         }]
       },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true }
-        }
-      }
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
 
     const searchInput = document.querySelector('.search-bar input');
-  const tableRows = document.querySelectorAll('.transactions-table tbody tr');
+    const tableRows = document.querySelectorAll('.transactions-table tbody tr');
 
-  searchInput.addEventListener('input', function () {
-    const searchTerm = this.value.toLowerCase();
-
-    tableRows.forEach(row => {
-      const rowText = row.cells[2].textContent.toLowerCase();
-      if (rowText.includes(searchTerm)) {
-        row.style.display = '';
-      } else {
-        row.style.display = 'none';
-      }
+    searchInput.addEventListener('input', function () {
+      const searchTerm = this.value.toLowerCase();
+      tableRows.forEach(row => {
+        const rowText = row.cells[2].textContent.toLowerCase();
+        row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+      });
     });
-  });
   </script>
   <!-- Bootstrap JS (including Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
