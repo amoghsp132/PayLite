@@ -11,7 +11,11 @@ import os
 import time
 from datetime import datetime
 import requests
-
+import qrcode
+import qrcode
+import io
+import base64
+from urllib.parse import quote
 # ----------------- Flask Setup -----------------
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "porsche911"
@@ -235,28 +239,46 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
-@app.route("/widget")
+@app.route("/widget", methods=["GET", "POST"])
 def widget():
-    
-    url = "https://upi-payment-qr-generator.p.rapidapi.com/generate-upi-qr"
+    # 1. Your payload data
     payload = {
-            "upiId": "9964043633@slc",
-            "payeeName": "Amogh Patil",
-            "transactionNote": "Payment for services",
-            "amount": "100",
-            "currency": "INR",
-            "size": 256
-        }
-    headers = {
-            "x-rapidapi-key": "ae8ace18c6msh831b97684daf3d0p139c99jsn3b1b5cdbfedf",
-            "x-rapidapi-host": "upi-payment-qr-generator.p.rapidapi.com",
-            "Content-Type": "application/json"
-        }
+        "upiId": "9964043633@slc",
+        "payeeName": "Amogh Patil",
+        "transactionNote": "PayLite Testing",
+        "amount": "100",
+        "currency": "INR"
+    }
 
-    response = requests.post(url, json=payload, headers=headers)
+    # 2. Build the UPI payment string (URI)
+    uri = (
+        f"upi://pay?"
+        f"pa={payload['upiId']}&"
+        f"pn={quote(payload['payeeName'])}&"
+        f"tn={quote(payload['transactionNote'])}&"
+        f"am={payload['amount']}&"
+        f"cu={payload['currency']}"
+    )
 
-        
-    return render_template("widget.html",qr_code=response.json().get("qrData"))
+    # 3. Generate the QR code in memory
+    img = qrcode.make(uri)
+    
+    # 4. Save image to a memory buffer
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    
+    # 5. Get the bytes from the buffer and encode as Base64
+    img_bytes = buf.getvalue()
+    base64_bytes = base64.b64encode(img_bytes)
+    base64_string = base64_bytes.decode("utf-8") # Decode bytes to a string
+
+    # 6. Format as a "Data URI"
+    # This is the string that the <img> tag will use as its src
+    qr_code_data_uri = f"data:image/png;base64,{base64_string}"
+
+    # 7. Pass this string to your template
+    return render_template("widget.html", qr_code=qr_code_data_uri)
+
     #https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=9964043633@ybl&pn=Paylite&am=99&cu=INR&tn=Payment%20for%20services or https://quickchart.io/qr?text=upi://pay?pa=9964043633@ybl&pn=Paylite&am=99&cu=INR&tn=Payment%20for%20services&size=250
 # ----------------- Placeholder APIs -----------------
 @app.route("/upi_sender", methods=["POST"])

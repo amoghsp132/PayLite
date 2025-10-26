@@ -135,15 +135,15 @@
       </form>
     `,
 qr: `
-  <h2>Scan & Pay</h2>
-  <div style="text-align:center;">
-    <img 
-      src='{{print(qr_code)}}' 
-      alt="UPI QR" 
-      style="width:250px;height:250px;margin-bottom:1rem;border-radius:10px;"
-    >
-    <p>Scan this QR with any UPI app to complete payment.</p>
-  </div>
+<h2>Scan & Pay</h2>
+<div style="text-align:center;">
+  <img 
+    src="{{ qr_code | safe }}" 
+    alt="UPI QR Code" 
+    style="width:250px; height:250px;"
+  >
+  <p>Scan this QR with any UPI app.</p>
+</div>
 `,
 
     emi: `
