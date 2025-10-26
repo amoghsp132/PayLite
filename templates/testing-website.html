@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paylite Widget Test Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Font Awesome (needed for icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <!-- --- INSERT YOUR WIDGET CSS BELOW THIS LINE --- -->
+  <style>
+    /* Your full widget CSS goes here */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(120deg, #094093, #400b94, #750ca5);
+      background-size: 400%;
+      animation: waterflow 6s ease-in-out infinite;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @keyframes waterflow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    /* Payment Container and rest of your widget CSS... */
+    /* (Paste all your widget CSS here) */
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1 style="text-align:center; color:#fff; margin-bottom:1.8rem;">
+      Paylite Widget Test Website
+    </h1>
+    <!-- --- INSERT YOUR WIDGET HTML BELOW THIS LINE --- -->
+    <!-- (Paste your complete widget HTML here) -->
+    <div class="payment-container">
+      <!-- ... Widget content ... -->
+       <iframe src="http://127.0.0.1:5000/widget" style="border:none; width:100%; height:600px;"></iframe>
+      <!-- (Paste from your previous full widget html block) -->
+    </div>
+    <!-- ---
+      End of widget area
+    --- -->
+  </main>
+
+  <!-- --- OPTIONAL: Insert Widget JS for tab switching etc. at end --- -->
+  <script>
+    // Paste your payment method switching JS here
+    document.querySelectorAll('.method').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.method').forEach(m => m.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.payment-form').forEach(f => f.style.display = 'none');
+        const method = this.getAttribute('data-method');
+        document.querySelector('.' + method + '-form').style.display = 'block';
+      });
+    });
+  </script>
+</body>
+</html>

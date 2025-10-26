@@ -1,3 +1,4 @@
+from fastapi import requests
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,6 +10,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
 import os
 import time
 from datetime import datetime
+import requests
 
 # ----------------- Flask Setup -----------------
 app = Flask(__name__)
@@ -235,8 +237,27 @@ def logout():
 
 @app.route("/widget")
 def widget():
-    return render_template("widget.html")
+    
+    url = "https://upi-payment-qr-generator.p.rapidapi.com/generate-upi-qr"
+    payload = {
+            "upiId": "9964043633@slc",
+            "payeeName": "Amogh Patil",
+            "transactionNote": "Payment for services",
+            "amount": "100",
+            "currency": "INR",
+            "size": 256
+        }
+    headers = {
+            "x-rapidapi-key": "ae8ace18c6msh831b97684daf3d0p139c99jsn3b1b5cdbfedf",
+            "x-rapidapi-host": "upi-payment-qr-generator.p.rapidapi.com",
+            "Content-Type": "application/json"
+        }
 
+    response = requests.post(url, json=payload, headers=headers)
+
+        
+    return render_template("widget.html",qr_code=response.json().get("qrData"))
+    #https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=9964043633@ybl&pn=Paylite&am=99&cu=INR&tn=Payment%20for%20services or https://quickchart.io/qr?text=upi://pay?pa=9964043633@ybl&pn=Paylite&am=99&cu=INR&tn=Payment%20for%20services&size=250
 # ----------------- Placeholder APIs -----------------
 @app.route("/upi_sender", methods=["POST"])
 def upi_sender():
