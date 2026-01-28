@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dummy Bank UI</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 220px;
+            display: inline-block;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: #1a73e8;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1558b0;
+        }
+
+        pre {
+            background: #eee;
+            padding: 10px;
+            border-radius: 6px;
+            max-height: 300px;
+            overflow: auto;
+        }
+
+        p {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Dummy Bank – Testing Dashboard</h1>
+
+<div class="section">
+    <h2>Create Account</h2>
+    <input id="fname" placeholder="First name">
+    <input id="lname" placeholder="Last name"><br>
+    <input id="cvv" placeholder="CVV">
+    <input id="card" placeholder="Card No (16 digits)"><br>
+    <input id="exp" placeholder="EXP (MM/YY)">
+    <input id="upi" placeholder="UPI ID"><br>
+    <input id="acc" placeholder="Bank Account No"><br><br>
+    <button onclick="createAccount()">Create</button>
+    <p id="createOut"></p>
+</div>
+
+<div class="section">
+    <h2>Add Money</h2>
+    <input id="accAdd" placeholder="Account No">
+    <input id="amtAdd" placeholder="Amount"><br><br>
+    <button onclick="addMoney()">Add</button>
+    <p id="addOut"></p>
+</div>
+
+<div class="section">
+    <h2>UPI Payment</h2>
+    <input id="fromUpi" placeholder="From UPI">
+    <input id="toUpi" placeholder="To UPI"><br>
+    <input id="amtUpi" placeholder="Amount"><br><br>
+    <button onclick="upiPay()">Pay</button>
+    <p id="upiOut"></p>
+</div>
+
+<div class="section">
+    <h2>Transfer (Account)</h2>
+    <input id="fromAcc" placeholder="From Account">
+    <input id="toAcc" placeholder="To Account"><br>
+    <input id="amtAcc" placeholder="Amount"><br><br>
+    <button onclick="transfer()">Transfer</button>
+    <p id="accOut"></p>
+</div>
+
+<div class="section">
+    <h2>All Accounts</h2>
+    <button onclick="loadAccounts()">Load Accounts</button>
+    <pre id="allAcc"></pre>
+</div>
+
+<script>
+    const BASE = "http://localhost:5000";
+
+    async function createAccount() {
+        const data = {
+            fname: fname.value,
+            lname: lname.value,
+            cvv: cvv.value,
+            card_no: card.value,
+            exp_date: exp.value,
+            upi_id: upi.value,
+            bank_account_no: acc.value
+        };
+
+        const res = await fetch(BASE + "/api/account/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        createOut.innerText = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function addMoney() {
+        const res = await fetch(BASE + "/api/account/addmoney", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                account_no: accAdd.value,
+                amount: amtAdd.value
+            })
+        });
+
+        addOut.innerText = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function upiPay() {
+        const res = await fetch(BASE + "/api/transaction/upi", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                from_upi: fromUpi.value,
+                to_upi: toUpi.value,
+                amount: amtUpi.value
+            })
+        });
+
+        upiOut.innerText = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function transfer() {
+        const res = await fetch(BASE + "/api/transaction/transfer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                from_account: fromAcc.value,
+                to_account: toAcc.value,
+                amount: amtAcc.value
+            })
+        });
+
+        accOut.innerText = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function loadAccounts() {
+        const res = await fetch(BASE + "/api/accounts/all");
+        allAcc.innerText = JSON.stringify(await res.json(), null, 2);
+    }
+</script>
+
+</body>
+</html>

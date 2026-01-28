@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PayLite Payment Widget – Developer Docs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="icon" href="./static/assets/images/PayLite_Logo.png">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: linear-gradient(135deg,#6610f2,#4b0082);
+  color: #fff;
+}
+main { padding-top: 80px; padding-bottom: 80px; }
+
+.panel {
+  background: rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+iframe {
+  width: 100%;
+  height: 620px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+}
+
+input {
+  background: rgba(255,255,255,0.15) !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+input::placeholder { color:#ddd; }
+
+pre {
+  background: rgba(0,0,0,0.35);
+  padding: 16px;
+  border-radius: 12px;
+  color: #e8ecff;
+}
+
+.badge { font-size: .9rem; }
+.small-muted { font-size:.85rem; opacity:.75 }
+</style>
+</head>
+
+<body>
+
+<header>
+  <nav class="navbar navbar-dark container">
+    <span class="navbar-brand fw-bold">PayLite</span>
+    <span class="opacity-75">Developer Documentation</span>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- HEADER -->
+  <div class="text-center mb-5">
+    <h1 class="fw-bold">Payment Widget</h1>
+    <p class="opacity-75">
+      Drop-in checkout widget for testing & integration
+    </p>
+  </div>
+
+  <!-- LIVE WIDGET -->
+  <div class="panel">
+    <h4 class="fw-bold mb-3">Live Widget Playground</h4>
+    <iframe id="widgetFrame"></iframe>
+  </div>
+
+  <!-- PARAMETERS -->
+  <div class="panel">
+    <h5 class="fw-bold mb-3">Test Payment Inputs</h5>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <input id="amount" class="form-control" value="499" placeholder="Amount (INR)">
+      </div>
+      <div class="col-md-4">
+        <input id="tn" class="form-control" value="PayLite Test Payment" placeholder="Transaction Note">
+      </div>
+      <div class="col-md-4">
+        <input id="tr" class="form-control" placeholder="Transaction Reference">
+      </div>
+
+      <div class="col-md-6">
+        <input id="pa" class="form-control" readonly>
+        <div class="small-muted">Merchant UPI (auto-loaded)</div>
+      </div>
+      <div class="col-md-6">
+        <input id="pn" class="form-control" readonly>
+        <div class="small-muted">Merchant Name</div>
+      </div>
+
+      <div class="col-md-12 d-grid mt-3">
+        <button class="btn btn-light fw-bold" onclick="applyPayload()">
+          Reload Widget
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSACTION RESULT -->
+  <div class="panel">
+    <h5 class="fw-bold mb-3">Transaction Result</h5>
+
+    <div class="row text-center">
+      <div class="col-md-4">
+        <div id="orderBadge" class="badge bg-secondary p-2 w-100">
+          Order ID<br><span id="orderOut">—</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div id="txnBadge" class="badge bg-secondary p-2 w-100">
+          Transaction ID<br><span id="txnOut">—</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div id="statusBadge" class="badge bg-warning text-dark p-2 w-100">
+          Status<br><span id="statusOut">PENDING</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMBED -->
+  <div class="panel">
+    <h5 class="fw-bold mb-3">Embed Code</h5>
+    <button class="btn btn-sm btn-light mb-2" onclick="copyEmbed()">Copy</button>
+    <pre id="embedCode"></pre>
+  </div>
+
+</main>
+
+<script>
+/* ---------------- DOM ---------------- */
+const amount = document.getElementById("amount");
+const pa = document.getElementById("pa");
+const pn = document.getElementById("pn");
+const tn = document.getElementById("tn");
+const tr = document.getElementById("tr");
+
+const widgetFrame = document.getElementById("widgetFrame");
+const embedCode = document.getElementById("embedCode");
+
+const orderOut = document.getElementById("orderOut");
+const txnOut = document.getElementById("txnOut");
+const statusOut = document.getElementById("statusOut");
+
+const orderBadge = document.getElementById("orderBadge");
+const txnBadge = document.getElementById("txnBadge");
+const statusBadge = document.getElementById("statusBadge");
+
+/* ---------------- LOAD MERCHANT ---------------- */
+async function loadMerchantDefaults() {
+  try {
+    const r = await fetch("/api/merchant/payment-defaults");
+    if (!r.ok) throw new Error();
+
+    const d = await r.json();
+    pa.value = d.pa;
+    pn.value = d.pn;
+
+    applyPayload();
+  } catch {
+    alert("Merchant configuration missing");
+  }
+}
+
+/* ---------------- APPLY PAYLOAD ---------------- */
+function applyPayload() {
+  const amt = parseFloat(amount.value);
+  if (isNaN(amt) || amt <= 0) {
+    alert("Invalid amount");
+    return;
+  }
+
+  if (!tr.value) {
+    tr.value = "PL-DEMO-" + Date.now();
+  }
+
+  const params = {
+    amount: amt.toFixed(2),
+    pa: pa.value,
+    pn: pn.value,
+    tn: tn.value,
+    tr: tr.value,
+    cu: "INR"
+  };
+
+  const q = Object.entries(params)
+    .map(([k,v]) => `${k}=${encodeURIComponent(v)}`)
+    .join("&");
+
+  const url = `/widget?${q}`;
+  widgetFrame.src = url;
+
+  embedCode.textContent =
+`<iframe
+  src="${location.origin}${url}"
+  style="width:100%;max-width:420px;height:620px;border:none"
+  loading="lazy">
+</iframe>`;
+
+  orderOut.textContent = "Pending widget action";
+  txnOut.textContent = "—";
+  statusOut.textContent = "PENDING";
+
+  statusBadge.className = "badge bg-warning text-dark p-2 w-100";
+}
+
+/* ---------------- COPY EMBED ---------------- */
+function copyEmbed() {
+  navigator.clipboard.writeText(embedCode.textContent);
+  alert("Embed code copied");
+}
+
+/* ---------------- RECEIVE WIDGET EVENTS ---------------- */
+window.addEventListener("message", (event) => {
+  if (!event.data || event.data.source !== "paylite-widget") return;
+
+  const { order_id, txn_id, status } = event.data;
+
+  if (order_id) orderOut.textContent = order_id;
+  if (txn_id) txnOut.textContent = txn_id;
+
+  if (status) {
+    statusOut.textContent = status.toUpperCase();
+
+    statusBadge.className =
+      "badge p-2 w-100 " +
+      (status === "success"
+        ? "bg-success"
+        : status === "failed"
+        ? "bg-danger"
+        : "bg-warning text-dark");
+  }
+});
+
+/* ---------------- INIT ---------------- */
+loadMerchantDefaults();
+</script>
+
+</body>
+</html>

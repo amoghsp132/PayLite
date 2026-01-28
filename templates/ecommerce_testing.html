@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>THREADLAB | Premium T-Shirts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/valorax" rel="stylesheet">
+
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+  background: #f5f5f7;
+}
+
+.navbar {
+  background: #000;
+}
+
+.navbar-brand {
+  font-family: 'valorax', sans-serif;
+  color: #fff !important;
+  letter-spacing: 2px;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+.price {
+  font-weight: 600;
+}
+
+.cart-box {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand">THREADLAB</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- PRODUCTS -->
+  <h4 class="mb-3">Premium Collection</h4>
+  <div class="row g-4 mb-5">
+
+    <!-- PRODUCT -->
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://bluberyl.in/cdn/shop/files/Black_Front.png?v=1726822168">
+        <h6>Classic Black Tee</h6>
+        <p class="price">₹999</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Classic Black Tee',999)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://arlostore.com/cdn/shop/files/26-66ffe61169fb0.webp?v=1728047057&width=2048">
+        <h6>Oversized White Tee</h6>
+        <p class="price">₹1,499</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Oversized White Tee',1499)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://media.canva.com/v2/mockup-template-rasterize/color0:171618/image0:s3%3A%2F%2Ftemplate.canva.com%2FEADaoqaL_4g%2F1%2F0%2F933w-EEE3A9135sY.png/mockuptemplateid:FqXFzEXX7/size:L?csig=AAAAAAAAAAAAAAAAAAAAADw2dVChOmrWTqrwnONjjG1Pb3dCAEDrIbqKMCHuAwKf&exp=1766280888&osig=AAAAAAAAAAAAAAAAAAAAAAcZalC4nE4WtfS-innJ_P4AracnO_1pfJ6UWeaI-gyu&seoslug=mint-minimalist-beauty-and-fashion-logo-t-shirt&signer=marketplace-rpc">
+        <h6>Minimal Logo Tee</h6>
+        <p class="price">₹1,299</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Minimal Logo Tee',1299)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://www.urbanneeds.in/cdn/shop/files/13_4c34df9a-71ff-43a4-9ecc-74a9c8bbf7f4.jpg?v=1711460235">
+        <h6>Urban Street Tee</h6>
+        <p class="price">₹1,799</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Urban Street Tee',1799)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://veirdo.in/cdn/shop/files/Artboard_7_31.jpg?v=1758348679">
+        <h6>Graphic Art Tee</h6>
+        <p class="price">₹2,499</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Graphic Art Tee',2499)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://ironflex.in/cdn/shop/products/ComingSoon..._1.png?v=1658205487">
+        <h6>Premium Cotton Tee</h6>
+        <p class="price">₹2,999</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Premium Cotton Tee',2999)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://i.etsystatic.com/34955496/r/il/b4d165/5249324379/il_300x300.5249324379_5fhw.jpg">
+        <h6>Luxury Drop Tee</h6>
+        <p class="price">₹4,999</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Luxury Drop Tee',4999)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="product-card">
+        <img src="https://www.styched.in/cdn/shop/products/not-weird-limited-yellow.png?v=1747856157">
+        <h6>Limited Edition Tee</h6>
+        <p class="price">₹3,499</p>
+        <button class="btn btn-dark btn-sm" onclick="addToCart('Limited Edition Tee',3499)">Add to Cart</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CART -->
+  <div class="cart-box">
+    <h4>Your Cart</h4>
+    <ul id="cartItems" class="list-group mb-3"></ul>
+    <h5>Total: ₹<span id="totalAmount">0</span></h5>
+    <button class="btn btn-success mt-3" onclick="checkout()">Checkout with PayLite</button>
+  </div>
+
+</div>
+
+<script>
+let cart = {};
+let total = 0;
+let merchant = {};
+
+async function loadMerchant() {
+  const res = await fetch("/api/merchant/payment-defaults");
+  merchant = await res.json();
+}
+loadMerchant();
+
+function addToCart(name, price) {
+  if (!cart[name]) cart[name] = { name, price, qty: 1 };
+  else cart[name].qty++;
+  renderCart();
+}
+
+function increase(name) { cart[name].qty++; renderCart(); }
+function decrease(name) {
+  cart[name].qty--;
+  if (cart[name].qty <= 0) delete cart[name];
+  renderCart();
+}
+function removeItem(name) { delete cart[name]; renderCart(); }
+
+function renderCart() {
+  const list = document.getElementById("cartItems");
+  list.innerHTML = "";
+  total = 0;
+
+  Object.values(cart).forEach(item => {
+    total += item.price * item.qty;
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
+    li.innerHTML = `
+      <div><strong>${item.name}</strong><br>₹${item.price} × ${item.qty}</div>
+      <div>
+        <button class="btn btn-sm btn-outline-secondary me-1" onclick="decrease('${item.name}')">−</button>
+        <button class="btn btn-sm btn-outline-secondary me-1" onclick="increase('${item.name}')">+</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="removeItem('${item.name}')">✕</button>
+      </div>`;
+    list.appendChild(li);
+  });
+
+  document.getElementById("totalAmount").innerText = total;
+}
+
+function checkout() {
+  if (total <= 0) return alert("Cart is empty");
+
+  const note = Object.values(cart).map(i => `${i.name} x${i.qty}`).join(", ");
+  const orderId = "TSHIRT-" + Date.now();
+
+  const widgetUrl =
+    "/widget?" +
+    "amount=" + total +
+    "&pa=" + encodeURIComponent(merchant.pa) +
+    "&pn=" + encodeURIComponent(merchant.pn) +
+    "&tn=" + encodeURIComponent(note) +
+    "&tr=" + orderId +
+    "&cu=INR";
+
+  window.location.href = widgetUrl;
+}
+</script>
+
+</body>
+</html>

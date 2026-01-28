@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Local Mart | POS & Inventory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+  background: #f3f4f6;
+  font-family: system-ui, -apple-system;
+}
+.navbar { background: #111827; }
+.navbar-brand { color: #fff !important; font-weight: 600; }
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+.product {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+.product:hover { background: #f1f5f9; }
+.bill-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.hidden { display: none; }
+</style>
+</head>
+
+<body>
+
+<nav class="navbar mb-3">
+  <div class="container-fluid d-flex justify-content-between">
+    <span class="navbar-brand">🛒 Local Mart POS System</span>
+    <div>
+      <button class="btn btn-sm btn-light me-2" onclick="switchMode('billing')">Billing</button>
+      <button class="btn btn-sm btn-warning" onclick="switchMode('inventory')">Inventory</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row g-3">
+
+    <!-- BILL PANEL -->
+    <div class="col-md-3" id="billingPanel">
+      <div class="panel">
+        <h5>Bill</h5>
+        <div id="billItems"></div>
+
+        <hr>
+        <div>Subtotal: ₹<span id="subTotal">0</span></div>
+        <div>GST (5%): ₹<span id="tax">0</span></div>
+        <strong>Total: ₹<span id="total">0</span></strong>
+
+        <button class="btn btn-success w-100 mt-3" onclick="generateBill()">Generate & Print Bill</button>
+        <button class="btn btn-outline-danger w-100 mt-2" onclick="clearBill()">Clear Bill</button>
+      </div>
+    </div>
+
+    <!-- MAIN PANEL -->
+    <div class="col-md-9">
+      <div class="panel">
+
+        <input type="text" id="search" class="form-control mb-3"
+               placeholder="Search by Name or SKU"
+               oninput="renderProducts()">
+
+        <div id="productList"></div>
+
+        <div id="inventoryPanel" class="hidden mt-4">
+          <h5>Inventory Management</h5>
+          <div class="row g-2">
+            <div class="col-md-4"><input class="form-control" id="iname" placeholder="Item Name"></div>
+            <div class="col-md-2"><input class="form-control" id="isku" placeholder="SKU"></div>
+            <div class="col-md-2"><input class="form-control" id="iprice" placeholder="Price"></div>
+            <div class="col-md-2"><input class="form-control" id="iqty" placeholder="Qty"></div>
+            <div class="col-md-2">
+              <button class="btn btn-primary w-100" onclick="addOrUpdateInventory()">Save</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const GST_RATE = 0.05;
+let inventory = [];
+let bill = {};
+let mode = "billing";
+let currentOrderId = null;
+
+/* ================= LOAD INVENTORY ================= */
+async function loadInventory() {
+  const res = await fetch("/api/inventory");
+  inventory = await res.json();
+  renderProducts();
+}
+loadInventory();
+
+/* ================= MODE ================= */
+function switchMode(m) {
+  mode = m;
+  search.value = "";
+  billingPanel.classList.toggle("hidden", m !== "billing");
+  inventoryPanel.classList.toggle("hidden", m !== "inventory");
+  renderProducts();
+}
+
+/* ================= PRODUCTS ================= */
+function renderProducts() {
+  const q = search.value.toLowerCase();
+  productList.innerHTML = "";
+
+  inventory
+    .filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q))
+    .forEach(p => {
+      productList.innerHTML += `
+        <div class="product">
+          <strong>${p.name}</strong><br>
+          SKU: ${p.sku} | ₹${p.price} | Stock: ${p.qty}
+          ${mode === "billing"
+            ? `<button class="btn btn-sm btn-success float-end" onclick="addToBill('${p.sku}')">Add</button>`
+            : `<button class="btn btn-sm btn-danger float-end" onclick="deleteItem('${p.sku}')">Delete</button>`
+          }
+        </div>
+      `;
+    });
+}
+
+/* ================= BILLING ================= */
+function addToBill(sku) {
+  const inv = inventory.find(i => i.sku === sku);
+  if (!inv || inv.qty <= 0) return alert("Out of stock");
+
+  bill[sku] ??= { name: inv.name, price: inv.price, qty: 0 };
+  bill[sku].qty++;
+  inv.qty--;
+
+  renderBill();
+  renderProducts();
+}
+
+function renderBill() {
+  let subtotal = 0;
+  billItems.innerHTML = "";
+
+  Object.values(bill).forEach(i => {
+    const t = i.qty * i.price;
+    subtotal += t;
+    billItems.innerHTML += `
+      <div class="bill-item">
+        <span>${i.name} x${i.qty}</span>
+        <span>₹${t}</span>
+      </div>
+    `;
+  });
+
+  const taxAmount = +(subtotal * GST_RATE).toFixed(2);
+  subTotal.innerText = subtotal;
+  tax.innerText = taxAmount;
+  total.innerText = subtotal + taxAmount;
+}
+
+function clearBill() {
+  Object.entries(bill).forEach(([sku, item]) => {
+    const inv = inventory.find(i => i.sku === sku);
+    if (inv) inv.qty += item.qty;
+  });
+  bill = {};
+  renderBill();
+  renderProducts();
+}
+
+/* ================= INVENTORY ================= */
+async function addOrUpdateInventory() {
+  if (!iname.value || !isku.value || !iprice.value || !iqty.value)
+    return alert("Fill all fields");
+
+  await fetch("/api/inventory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: iname.value,
+      sku: isku.value,
+      price: iprice.value,
+      qty: iqty.value
+    })
+  });
+
+  iname.value = isku.value = iprice.value = iqty.value = "";
+  loadInventory();
+}
+
+async function deleteItem(sku) {
+  await fetch(`/api/inventory/${sku}`, { method: "DELETE" });
+  loadInventory();
+}
+
+/* ================= BILL + PAYMENT ================= */
+function generateBill() {
+  if (!Object.keys(bill).length) return alert("Bill empty");
+
+  currentOrderId ??= "LM-" + Date.now();
+  const date = new Date().toLocaleString();
+
+  /* 💳 OPEN PAYMENT FIRST (popup-safe) */
+  const note = Object.values(bill).map(i => i.name).join(", ");
+  const paymentWindow = window.open(
+    `/widget?amount=${total.innerText}&tn=${encodeURIComponent(note)}&tr=${currentOrderId}&cu=INR`,
+    "_blank"
+  );
+
+  /* 🧾 BUILD RECEIPT */
+  let receipt = `
+    <html>
+    <head>
+      <title>Bill</title>
+      <style>
+        body { font-family: monospace; padding: 10px; }
+        h2 { text-align: center; }
+        .line { display: flex; justify-content: space-between; }
+        hr { border: none; border-top: 1px dashed #000; }
+      </style>
+    </head>
+    <body>
+      <h2>LOCAL MART</h2>
+      <div>Order ID: ${currentOrderId}</div>
+      <div>Date: ${date}</div>
+      <hr>
+  `;
+
+  Object.values(bill).forEach(i => {
+    receipt += `
+      <div class="line">
+        <span>${i.name} x${i.qty}</span>
+        <span>₹${i.qty * i.price}</span>
+      </div>
+    `;
+  });
+
+  receipt += `
+      <hr>
+      <div class="line"><strong>Total</strong><strong>₹${total.innerText}</strong></div>
+      <hr>
+      <p style="text-align:center">Thank you! 🙏</p>
+    </body>
+    </html>
+  `;
+
+  /* 🧾 PRINT AFTER PAYMENT WINDOW IS OPENED */
+  setTimeout(() => {
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+
+    iframe.contentDocument.write(receipt);
+    iframe.contentDocument.close();
+
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  }, 200); // small delay = reliable
+
+  clearBill();
+  currentOrderId = null;
+}
+
+</script>
+
+</body>
+</html>

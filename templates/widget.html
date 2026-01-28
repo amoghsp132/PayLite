@@ -1,170 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Paylite Payment Gateway</title>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/widget.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <style>
+    .pay-btn{
+      padding:12px 18px;
+      border:none;
+      border-radius:6px;
+      color:#fff;
+      font-size:1rem;
+      cursor:pointer;
+      width:100%;
+      margin-top:10px;
+    }
+    .input{
+      width:100%;
+      padding:10px;
+      margin:8px 0;
+      border-radius:6px;
+      border:1px solid #ccc;
+      font-size:1rem;
+    }
+  </style>
 </head>
+
 <body>
-
 <div class="payment-container">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h3>Payment Methods</h3>
-    <div class="method active" data-method="card"><i class="fa fa-credit-card"></i> Credit / Debit Cards</div>
-    <div class="method" data-method="emi"><i class="fa fa-percent"></i> EMI</div>
-    <div class="method" data-method="netbanking"><i class="fa fa-university"></i> Net Banking</div>
-    <div class="method" data-method="upi"><i class="fa fa-bolt"></i> UPI</div>
-    <div class="method" data-method="wallet"><i class="fa fa-google-wallet"></i> Wallets</div>
-    <div class="method" data-method="qr"><i class="fa fa-qrcode"></i> QR</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar">
+  <h3>Payment Methods</h3>
+  <div class="method" data-method="card">
+    <i class="fa fa-credit-card"></i> Card
   </div>
-
-  <!-- Main Form -->
-  <div class="form-area" id="formArea">
-    <h2>Enter Card Details</h2>
-    <form id="paymentForm">
-      <div class="form-group">
-        <label>Card Number</label>
-        <input type="text" placeholder="Valid Card Number" required>
-      </div>
-      <div class="form-group">
-        <label>Expiry Date</label>
-        <input type="text" placeholder="MM / YY" required>
-      </div>
-      <div class="form-group">
-        <label>CVV</label>
-        <input type="text" placeholder="CVV" required>
-      </div>
-      <div class="form-group">
-        <label>Cardholder Name</label>
-        <input type="text" placeholder="Name as on card" required>
-      </div>
-      <button class="pay-btn" type="submit">Make Payment</button>
-    </form>
-    
-  </div>
-  
-
-  <!-- Summary Panel -->
-  <div class="summary">
-    <h4>Merchant Name</h4>
-    <p id="merchantName">Amogh Patil</p>
-    <h4>Order ID</h4>
-    <p id="orderId">TEST132ABCXYZ</p>
-    <h4>Payment Amount</h4>
-    <p class="amount" id="amount">₹100</p>
-
-    <div class="secure-text"><i class="fa fa-lock"></i>100% Secure Payments</div><br>
-    <div id="timer" style="font-size:1.3rem; color:#24005f; font-weight:600; text-align:center; margin-bottom:1rem;">
-  10:00
-</div>
- <br><p class="warning" style="text-align:center; color:red; font-size:1rem">DO NOT REFRESH THIS PAGE<br>Doing so will cancel your payment transaction.</p>
+  <div class="method active" data-method="qr">
+    <i class="fa fa-qrcode"></i> QR / UPI
   </div>
 </div>
+
+<!-- ================= FORM AREA ================= -->
+<div class="form-area" id="formArea"></div>
+
+<!-- ================= SUMMARY ================= -->
+<div class="summary">
+  <h4>Payee</h4>
+  <p>{{ payee_name }}</p>
+
+  <h4>Order ID</h4>
+  <p id="orderId">{{ order_id }}</p>
+
+  <h4>Payment ID</h4>
+  <p id="txnId" style="opacity:.8;">{{ intent_id }}</p>
+
+  <h4>Amount</h4>
+  <p class="amount">
+    {% if amount and amount != "0.00" %}₹{{ amount }}{% else %}—{% endif %}
+  </p>
+
+  <div id="timer"
+       style="margin-top:1rem;font-size:1.2rem;font-weight:600;">10:00</div>
+
+  <p style="color:red;text-align:center;margin-top:1rem;">
+    DO NOT REFRESH THIS PAGE
+  </p>
+</div>
+
+</div>
+
 <script>
-  // Set countdown time in seconds
-  let timeLeft = 600;
+/* ================= DATA ================= */
+const ORDER_ID    = "{{ order_id }}";
+const DEFAULT_AMT = "{{ amount }}";
+const PAYEE_UPI   = "{{ payee_upi }}";
 
-  function formatTime(secs) {
-    const minutes = Math.floor(secs / 60);
-    const seconds = secs % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+/* ================= TIMER ================= */
+let t = 600;
+const timer = document.getElementById("timer");
+const iv = setInterval(()=>{
+  t--;
+  timer.textContent =
+    `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+  if(t <= 0){
+    clearInterval(iv);
+    alert("❌ Session expired");
+    location="/localMart";
+  }
+},1000);
+
+/* ================= FORMS ================= */
+const forms = {
+  qr: `
+    <h2>Scan & Pay</h2>
+    <div style="text-align:center">
+      <img src="{{ qr_code | safe }}" style="width:250px;height:250px"/>
+      <p>Scan using any UPI app</p>
+    </div>
+
+    <button class="pay-btn" style="background:#2ecc71"
+      onclick="manualResult('success')">
+      ✅ Mark Payment Successful
+    </button>
+
+    <button class="pay-btn" style="background:#f1c40f;color:#000"
+      onclick="manualResult('pending')">
+      🕒 Mark Payment Pending
+    </button>
+
+    <button class="pay-btn" style="background:#e74c3c"
+      onclick="manualResult('failed')">
+      ❌ Mark Payment Failed
+    </button>
+  `,
+
+  card: `
+    <h2>Card Payment</h2>
+
+    <input class="input" id="card_no"
+      placeholder="Card Number (16 digits)"
+      maxlength="16"
+      inputmode="numeric">
+
+    <input class="input" id="exp_date"
+      placeholder="MM / YY"
+      maxlength="5"
+      inputmode="numeric">
+
+    <input class="input" id="cvv"
+      placeholder="CVV"
+      maxlength="3"
+      inputmode="numeric">
+
+    <button class="pay-btn" style="background:#3498db"
+      onclick="payByCard()">
+      💳 Pay ₹${DEFAULT_AMT || "0.00"}
+    </button>
+  `
+};
+
+const formArea = document.getElementById("formArea");
+formArea.innerHTML = forms.qr;
+
+/* ================= SIDEBAR ================= */
+document.querySelectorAll(".method").forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll(".method").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    formArea.innerHTML = forms[btn.dataset.method];
+    attachInputGuards();
+  };
+});
+
+/* ================= INPUT GUARDS ================= */
+function attachInputGuards(){
+  const card = document.getElementById("card_no");
+  const exp  = document.getElementById("exp_date");
+  const cvv  = document.getElementById("cvv");
+
+  if(card){
+    card.oninput = ()=> card.value = card.value.replace(/\D/g,"").slice(0,16);
+  }
+  if(exp){
+    exp.oninput = ()=>{
+      let v = exp.value.replace(/\D/g,"").slice(0,4);
+      if(v.length >= 3) v = v.slice(0,2) + "/" + v.slice(2);
+      exp.value = v;
+    };
+  }
+  if(cvv){
+    cvv.oninput = ()=> cvv.value = cvv.value.replace(/\D/g,"").slice(0,3);
+  }
+}
+
+/* ================= CARD PAYMENT ================= */
+async function payByCard(){
+  const expRaw = document.getElementById("exp_date").value;
+  if(!/^\d{2}\/\d{2}$/.test(expRaw)){
+    alert("❌ Invalid expiry format");
+    return;
   }
 
-  const timerEl = document.getElementById('timer');
-  timerEl.textContent = formatTime(timeLeft);
-
-  const interval = setInterval(() => {
-    timeLeft--;
-    timerEl.textContent = formatTime(timeLeft);
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      timerEl.textContent = "Time's up!";
-      alert("Transaction Failed.\nSession expired. Please try again.");
-      window.location.href = "/";
-    }
-  }, 1000);
-</script>
-
-<script>
-  // Dynamic merchant info simulation
-  const merchantName = "Amogh Patil";
-  const orderId = "TEST132ABCXYZ";
-  const amount = "₹100";
-  document.getElementById("merchantName").textContent = merchantName;
-  document.getElementById("orderId").textContent = orderId;
-  document.getElementById("amount").textContent = amount;
-
-  // Payment method switching
-  const methods = document.querySelectorAll(".method");
-  const formArea = document.getElementById("formArea");
-
-  const forms = {
-    card: `
-      <h2>Enter Card Details</h2>
-      <form>
-        <div class="form-group"><label>Card Number</label><input type="text" placeholder="Valid Card Number" required></div>
-        <div class="form-group"><label>Expiry Date</label><input type="text" placeholder="MM / YY" required></div>
-        <div class="form-group"><label>CVV</label><input type="text" placeholder="CVV" required></div>
-        <div class="form-group"><label>Cardholder Name</label><input type="text" placeholder="Name as on card" required></div>
-        <button class="pay-btn">Make Payment</button>
-      </form>
-    `,
-    upi: `
-      <h2>Pay via UPI</h2>
-      <form>
-        <div class="form-group"><label>UPI ID</label><input type="text" placeholder="yourname@upi" required></div>
-        <button class="pay-btn">Pay Now</button>
-      </form>
-    `,
-    netbanking: `
-      <h2>Pay via Net Banking</h2>
-      <form>
-        <div class="form-group"><label>Account Number</label><input type="text" placeholder="Enter Account Number" required></div>
-        <div class="form-group"><label>IFSC Code</label><input type="text" placeholder="Enter IFSC Code" required></div>
-        <button class="pay-btn">Proceed to Bank</button>
-      </form>
-    `,
-    wallet: `
-      <h2>Pay using Wallet</h2>
-      <form>
-        <div class="form-group"><label>Choose Wallet</label><input type="text" placeholder="Paytm / PhonePe / Amazon Pay" required></div>
-        <button class="pay-btn">Pay with Wallet</button>
-      </form>
-    `,
-qr: `
-<h2>Scan & Pay</h2>
-<div style="text-align:center;">
-  <img 
-    src="{{ qr_code | safe }}" 
-    alt="UPI QR Code" 
-    style="width:250px; height:250px;"
-  >
-  <p>Scan this QR with any UPI app.</p>
-</div>
-`,
-
-    emi: `
-      <h2>Pay via EMI</h2>
-      <form>
-        <div class="form-group"><label>Card Number</label><input type="text" placeholder="Enter Credit Card Number" required></div>
-        <div class="form-group"><label>Tenure (Months)</label><input type="number" placeholder="6 / 9 / 12" required></div>
-        <button class="pay-btn">Proceed with EMI</button>
-      </form>
-    `
+  const [mm, yy] = expRaw.split("/");
+  const payload = {
+    method: "card",
+    amount: Number(DEFAULT_AMT || 0),
+    to_upi: PAYEE_UPI,
+    order_id: ORDER_ID,
+    card_no: document.getElementById("card_no").value,
+    cvv: document.getElementById("cvv").value,
+    exp_date: `${mm}/20${yy}`
   };
 
-  methods.forEach(btn => {
-    btn.addEventListener("click", () => {
-      methods.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      const method = btn.dataset.method;
-      formArea.innerHTML = forms[method];
-    });
+  const r = await fetch("/api/widget/pay",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
   });
-</script>
 
+  const j = await r.json();
+
+  if(j.ok){
+    document.getElementById("txnId").textContent = j.txn_id;
+
+    window.parent.postMessage({
+      source: "paylite-widget",
+      order_id: j.order_id,
+      txn_id: j.txn_id,
+      status: "success"
+    }, "*");
+
+    alert(`✅ PAYMENT SUCCESSFUL\nTxn ID: ${j.txn_id}`);
+    setTimeout(()=>location="/localMart",1200);
+  }else{
+    window.parent.postMessage({
+      source: "paylite-widget",
+      order_id: ORDER_ID,
+      status: "failed"
+    }, "*");
+
+    alert("❌ Payment failed: " + (j.error || "Unknown error"));
+  }
+}
+
+/* ================= MANUAL RESULT ================= */
+async function manualResult(status){
+  const r = await fetch("/api/widget/manual-result",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      status,
+      amount: DEFAULT_AMT || 0,
+      order_id: ORDER_ID,
+      payee_upi: PAYEE_UPI
+    })
+  });
+
+  const j = await r.json();
+  if(!j.ok){
+    alert("❌ Error processing transaction");
+    return;
+  }
+
+  window.parent.postMessage({
+    source: "paylite-widget",
+    order_id: ORDER_ID,
+    txn_id: j.txn_id || null,
+    status: status
+  }, "*");
+
+  if(status === "success"){
+    document.getElementById("txnId").textContent = j.txn_id;
+    alert(`✅ PAYMENT SUCCESSFUL\nTxn ID: ${j.txn_id}`);
+  } else if(status === "pending"){
+    document.getElementById("txnId").textContent = "PENDING";
+    alert("🕒 PAYMENT PENDING");
+  } else {
+    alert("❌ PAYMENT FAILED");
+  }
+
+  setTimeout(()=>location="/localMart",1200);
+}
+</script>
 </body>
 </html>
